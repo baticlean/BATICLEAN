@@ -27,7 +27,7 @@ import Toast from '../../components/common/Toast';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
-  const [stats, setStats] = useState({ totalQuotes: 0, pendingQuotes: 0, totalAppointments: 0, activeProjects: 0 });
+  const [stats, setStats] = useState({ totalQuotes: 0, pendingQuotes: 0, totalAppointments: 0, activeProjects: 0, totalPartners: 0 });
   const [quotes, setQuotes] = useState([]);
   const [projects, setProjects] = useState([]);
   const [partners, setPartners] = useState([]);
@@ -78,26 +78,40 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // 1. Stats Dashboard
       const statsRes = await getAdminDashboardStats();
-      if (statsRes?.data) setStats(statsRes.data);
+      const statsData = statsRes?.data?.data || statsRes?.data || {};
+      setStats(statsData);
 
+      // 2. Demandes de Devis
       const quotesRes = await getAdminQuoteRequests();
-      const loadedQuotes = quotesRes?.data?.requests || quotesRes?.data?.quoteRequests || [];
+      const quotesData = quotesRes?.data?.data || quotesRes?.data || {};
+      const loadedQuotes = Array.isArray(quotesData) 
+        ? quotesData 
+        : (quotesData.requests || quotesData.quoteRequests || statsData.recentRequests || []);
       setQuotes(loadedQuotes);
 
+      // 3. Réalisations / Projets
       const projectsRes = await getAdminProjects();
-      if (projectsRes?.data) setProjects(projectsRes.data);
+      const projectsData = projectsRes?.data?.data || projectsRes?.data || [];
+      setProjects(Array.isArray(projectsData) ? projectsData : []);
 
+      // 4. Partenaires du Réseau
       const partnersRes = await getAdminPartners();
-      if (partnersRes?.data) setPartners(partnersRes.data);
+      const partnersData = partnersRes?.data?.data || partnersRes?.data || [];
+      setPartners(Array.isArray(partnersData) ? partnersData : []);
 
+      // 5. Demandes de Partenariat Reçues
       const pReqRes = await getAdminPartnerRequests();
-      if (pReqRes?.data) setPartnerRequests(pReqRes.data);
+      const pReqData = pReqRes?.data?.data || pReqRes?.data || [];
+      setPartnerRequests(Array.isArray(pReqData) ? pReqData : []);
 
+      // 6. Média Hero d'Accueil
       const heroRes = await getHeroMediaSetting();
-      const heroData = heroRes?.data || heroRes;
+      const heroData = heroRes?.data?.data || heroRes?.data || heroRes;
       if (heroData && heroData.mediaType) setHeroMedia(heroData);
     } catch (error) {
+      console.error('Erreur lors de la récupération des données d\'administration :', error);
       setToast({ type: 'error', message: 'Erreur lors du chargement des données d\'administration.' });
     } finally {
       setLoading(false);
@@ -636,9 +650,9 @@ const AdminDashboard = () => {
                     <tr key={q._id || q.reference} className="hover:bg-slate-50/60">
                       <td className="p-3 font-bold text-[#195D9B]">{q.reference}</td>
                       <td className="p-3">
-                        <p className="font-bold text-slate-900">{q.firstName || 'Client'} {q.lastName || ''}</p>
-                        <p className="text-[11px] text-slate-500">{q.phone || '-'}</p>
-                        <p className="text-[11px] text-[#195D9B]">{q.email || '-'}</p>
+                        <p className="font-bold text-slate-900">{q.firstName || q.clientId?.contactName || 'Client'} {q.lastName || ''}</p>
+                        <p className="text-[11px] text-slate-500">{q.phone || q.clientId?.phone || '-'}</p>
+                        <p className="text-[11px] text-[#195D9B]">{q.email || q.clientId?.email || '-'}</p>
                       </td>
                       <td className="p-3 text-slate-700">{q.commune || q.district || q.city}</td>
                       <td className="p-3 font-medium text-slate-800">{q.buildingType} ({q.estimatedSurface || 0} m²)</td>
