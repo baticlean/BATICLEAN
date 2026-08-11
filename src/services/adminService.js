@@ -1,90 +1,81 @@
 import apiClient from '../api/apiClient';
 
 export const getAdminDashboardStats = async () => {
-  const response = await apiClient.get('/admin/dashboard');
-  return response.data;
+  return await apiClient.get('/admin/dashboard');
 };
 
 export const getAdminQuoteRequests = async (params = {}) => {
-  const response = await apiClient.get('/admin/quote-requests', { params });
-  return response.data;
+  return await apiClient.get('/admin/quote-requests', { params });
 };
 
 export const updateQuoteStatus = async (id, status, internalNotes) => {
-  const response = await apiClient.patch(`/admin/quote-requests/${id}/status`, { status, internalNotes });
-  return response.data;
+  return await apiClient.patch(`/admin/quote-requests/${id}/status`, { status, internalNotes });
+};
+
+export const deleteAdminQuoteRequest = async (id) => {
+  return await apiClient.delete(`/admin/quote-requests/${id}`);
 };
 
 export const getAdminAppointments = async (params = {}) => {
-  const response = await apiClient.get('/admin/appointments', { params });
-  return response.data;
+  return await apiClient.get('/admin/appointments', { params });
 };
 
 export const updateAppointmentStatus = async (id, status, notes) => {
-  const response = await apiClient.patch(`/admin/appointments/${id}/status`, { status, notes });
-  return response.data;
+  return await apiClient.patch(`/admin/appointments/${id}/status`, { status, notes });
 };
 
 // Projects admin calls
 export const getAdminProjects = async () => {
-  const response = await apiClient.get('/admin/projects');
-  return response.data;
+  return await apiClient.get('/admin/projects');
 };
 
 export const createAdminProject = async (projectData) => {
-  const response = await apiClient.post('/admin/projects', projectData);
-  return response.data;
+  return await apiClient.post('/admin/projects', projectData);
 };
 
 export const toggleAdminProjectPublication = async (id) => {
-  const response = await apiClient.patch(`/admin/projects/${id}/toggle-publish`);
-  return response.data;
+  return await apiClient.patch(`/admin/projects/${id}/toggle-publish`);
 };
 
 export const deleteAdminProject = async (id) => {
-  const response = await apiClient.delete(`/admin/projects/${id}`);
-  return response.data;
+  return await apiClient.delete(`/admin/projects/${id}`);
 };
 
 // Partners admin calls
 export const getAdminPartners = async () => {
-  const response = await apiClient.get('/admin/partners');
-  return response.data;
+  return await apiClient.get('/admin/partners');
 };
 
 export const createAdminPartner = async (partnerData) => {
-  const response = await apiClient.post('/admin/partners', partnerData);
-  return response.data;
+  return await apiClient.post('/admin/partners', partnerData);
 };
 
 export const toggleAdminPartnerPublication = async (id) => {
-  const response = await apiClient.patch(`/admin/partners/${id}/toggle-publish`);
-  return response.data;
+  return await apiClient.patch(`/admin/partners/${id}/toggle-publish`);
 };
 
 export const deleteAdminPartner = async (id) => {
-  const response = await apiClient.delete(`/admin/partners/${id}`);
-  return response.data;
+  return await apiClient.delete(`/admin/partners/${id}`);
 };
 
 // Partner Requests admin calls
 export const getAdminPartnerRequests = async () => {
-  const response = await apiClient.get('/admin/partner-requests');
-  return response.data;
+  return await apiClient.get('/admin/partner-requests');
 };
 
 export const respondToAdminPartnerRequest = async (id, status, responseNotes) => {
-  const response = await apiClient.patch(`/admin/partner-requests/${id}/respond`, { status, responseNotes });
-  return response.data;
+  return await apiClient.patch(`/admin/partner-requests/${id}/respond`, { status, responseNotes });
+};
+
+export const deleteAdminPartnerRequest = async (id) => {
+  return await apiClient.delete(`/admin/partner-requests/${id}`);
 };
 
 // Hero Media admin calls
 export const getHeroMediaSetting = async () => {
-  const response = await apiClient.get('/hero-media');
-  return response.data;
+  return await apiClient.get('/hero-media');
 };
 
 export const updateHeroMediaSetting = async (heroMediaData) => {
-  const response = await apiClient.put('/admin/hero-media', heroMediaData);
-  return response.data;
+  return await apiClient.put('/admin/hero-media', heroMediaData);
 };

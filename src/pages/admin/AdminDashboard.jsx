@@ -9,6 +9,7 @@ import {
   getAdminDashboardStats,
   getAdminQuoteRequests,
   updateQuoteStatus,
+  deleteAdminQuoteRequest,
   getAdminProjects,
   createAdminProject,
   toggleAdminProjectPublication,
@@ -19,6 +20,7 @@ import {
   deleteAdminPartner,
   getAdminPartnerRequests,
   respondToAdminPartnerRequest,
+  deleteAdminPartnerRequest,
   getHeroMediaSetting,
   updateHeroMediaSetting,
 } from '../../services/adminService';
@@ -78,40 +80,34 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Stats Dashboard
       const statsRes = await getAdminDashboardStats();
-      const statsData = statsRes?.data?.data || statsRes?.data || {};
+      const statsData = statsRes?.data || statsRes || {};
       setStats(statsData);
 
-      // 2. Demandes de Devis
       const quotesRes = await getAdminQuoteRequests();
-      const quotesData = quotesRes?.data?.data || quotesRes?.data || {};
+      const quotesData = quotesRes?.data || quotesRes || {};
       const loadedQuotes = Array.isArray(quotesData) 
         ? quotesData 
         : (quotesData.requests || quotesData.quoteRequests || statsData.recentRequests || []);
       setQuotes(loadedQuotes);
 
-      // 3. Réalisations / Projets
       const projectsRes = await getAdminProjects();
-      const projectsData = projectsRes?.data?.data || projectsRes?.data || [];
+      const projectsData = projectsRes?.data || projectsRes || [];
       setProjects(Array.isArray(projectsData) ? projectsData : []);
 
-      // 4. Partenaires du Réseau
       const partnersRes = await getAdminPartners();
-      const partnersData = partnersRes?.data?.data || partnersRes?.data || [];
+      const partnersData = partnersRes?.data || partnersRes || [];
       setPartners(Array.isArray(partnersData) ? partnersData : []);
 
-      // 5. Demandes de Partenariat Reçues
       const pReqRes = await getAdminPartnerRequests();
-      const pReqData = pReqRes?.data?.data || pReqRes?.data || [];
+      const pReqData = pReqRes?.data || pReqRes || [];
       setPartnerRequests(Array.isArray(pReqData) ? pReqData : []);
 
-      // 6. Média Hero d'Accueil
       const heroRes = await getHeroMediaSetting();
-      const heroData = heroRes?.data?.data || heroRes?.data || heroRes;
+      const heroData = heroRes?.data || heroRes;
       if (heroData && heroData.mediaType) setHeroMedia(heroData);
     } catch (error) {
-      console.error('Erreur lors de la récupération des données d\'administration :', error);
+      console.error('Erreur lors du chargement des données d\'administration :', error);
       setToast({ type: 'error', message: 'Erreur lors du chargement des données d\'administration.' });
     } finally {
       setLoading(false);
@@ -121,7 +117,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
 
-    // Connexion WebSocket temps réel Socket.io
     socket.on('quote_request_created', (data) => {
       setToast({ type: 'info', message: `Nouvelle demande de devis reçue ! (${data.reference})` });
       fetchData();
@@ -156,6 +151,28 @@ const AdminDashboard = () => {
       fetchData();
     } catch (error) {
       setToast({ type: 'error', message: 'Échec de mise à jour du statut.' });
+    }
+  };
+
+  const handleDeleteQuoteRequest = async (id) => {
+    if (!window.confirm('Voulez-vous vraiment supprimer cette demande de devis ?')) return;
+    try {
+      await deleteAdminQuoteRequest(id);
+      setToast({ type: 'success', message: 'Demande de devis supprimée.' });
+      fetchData();
+    } catch (error) {
+      setToast({ type: 'error', message: 'Erreur de suppression de la demande de devis.' });
+    }
+  };
+
+  const handleDeletePartnerRequest = async (id) => {
+    if (!window.confirm('Voulez-vous vraiment supprimer cette demande de partenariat ?')) return;
+    try {
+      await deleteAdminPartnerRequest(id);
+      setToast({ type: 'success', message: 'Demande de partenariat supprimée.' });
+      fetchData();
+    } catch (error) {
+      setToast({ type: 'error', message: 'Erreur de suppression.' });
     }
   };
 
@@ -543,21 +560,21 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-900">Demandes de Partenariat Reçues</h2>
-              <p className="text-xs text-slate-500">Traitez et répondez directement par email aux demandes de partenariat BTP.</p>
+              <p className="text-xs text-slate-500">Traitez, répondez par email ou supprimez les demandes obsolètes.</p>
             </div>
             <Badge variant="primary">{partnerRequests.filter(r => r.status === 'PENDING').length} en attente</Badge>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto border border-slate-100 rounded-2xl">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/80">
+              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="p-3">Référence</th>
                   <th className="p-3">Société & Contact</th>
                   <th className="p-3">Secteur</th>
                   <th className="p-3">Message / Synergie</th>
                   <th className="p-3">Statut</th>
-                  <th className="p-3 text-right">Décision & Email</th>
+                  <th className="p-3 text-right">Décision & Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -607,6 +624,13 @@ const AdminDashboard = () => {
                           >
                             <XCircle className="w-3.5 h-3.5" /> Refuser
                           </button>
+                          <button
+                            onClick={() => handleDeletePartnerRequest(r._id)}
+                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Supprimer la demande"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -626,10 +650,10 @@ const AdminDashboard = () => {
             </span>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto border border-slate-100 rounded-2xl">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/80">
+              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="p-3">Référence</th>
                   <th className="p-3">Demandeur</th>
                   <th className="p-3">Localisation</th>
@@ -673,6 +697,13 @@ const AdminDashboard = () => {
                           >
                             Valider
                           </button>
+                          <button
+                            onClick={() => handleDeleteQuoteRequest(q._id)}
+                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Supprimer le devis"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -695,10 +726,10 @@ const AdminDashboard = () => {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto border border-slate-100 rounded-2xl">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/80">
+              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="p-3">Partenaire</th>
                   <th className="p-3">Catégorie</th>
                   <th className="p-3">Contacts</th>
@@ -784,10 +815,10 @@ const AdminDashboard = () => {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto border border-slate-100 rounded-2xl">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/80">
+              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="p-3">Nom du Chantier</th>
                   <th className="p-3">Type</th>
                   <th className="p-3">Localisation</th>
