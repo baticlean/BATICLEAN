@@ -16,6 +16,19 @@ export const deleteAdminQuoteRequest = async (id) => {
   return await apiClient.delete(`/admin/quote-requests/${id}`);
 };
 
+// Fonctions Devis PDF BTP
+export const generateQuotePdfApi = async (id) => {
+  return await apiClient.post(`/admin/quote-requests/${id}/pdf/generate`);
+};
+
+export const uploadCustomQuotePdfApi = async (id, customPdfBase64) => {
+  return await apiClient.post(`/admin/quote-requests/${id}/pdf/upload`, { customPdfBase64 });
+};
+
+export const sendQuotePdfToClientApi = async (id, customNotes) => {
+  return await apiClient.post(`/admin/quote-requests/${id}/pdf/send`, { customNotes });
+};
+
 export const getAdminAppointments = async (params = {}) => {
   return await apiClient.get('/admin/appointments', { params });
 };
@@ -78,4 +91,13 @@ export const getHeroMediaSetting = async () => {
 
 export const updateHeroMediaSetting = async (heroMediaData) => {
   return await apiClient.put('/admin/hero-media', heroMediaData);
+};
+
+// Company Settings admin calls (Contact & Opening Hours)
+export const getCompanySettingsApi = async () => {
+  return await apiClient.get('/company-settings');
+};
+
+export const updateCompanySettingsApi = async (settingsData) => {
+  return await apiClient.put('/admin/company-settings', settingsData);
 };

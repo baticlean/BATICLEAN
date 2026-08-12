@@ -1,14 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Toast from '../components/common/Toast';
-import { Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Mail, MapPin, Clock, Send, Phone } from 'lucide-react';
 import apiClient from '../api/apiClient';
+import { getCompanySettingsApi } from '../services/adminService';
+import { socket } from '../api/socket';
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const [settings, setSettings] = useState({
+    officialPhone: '+225 07 68 38 87 79',
+    phoneSecondary: '+225 01 02 03 04 05',
+    officialEmail: 'contact@baticlean.ci',
+    emailDevis: 'devis@baticlean.ci',
+    officialAddress: "Abidjan, Côte d'Ivoire - Cocody Angré 8ème Tranche",
+    openingHoursWeek: 'Lundi - Samedi : 07h30 - 18h30',
+    openingHoursWeekend: 'Dimanche : Sur rendez-vous uniquement',
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await getCompanySettingsApi();
+        const data = res?.data || res;
+        if (data && data.officialPhone) {
+          setSettings(data);
+        }
+      } catch (err) {
+        console.warn('Utilisation des coordonnées par défaut Contact :', err);
+      }
+    };
+
+    fetchSettings();
+
+    socket.on('company_settings_updated', (updated) => {
+      if (updated && updated.officialPhone) {
+        setSettings(updated);
+      }
+    });
+
+    return () => {
+      socket.off('company_settings_updated');
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,14 +79,25 @@ const Contact = () => {
             <Card className="p-8 space-y-6 border-2 border-slate-100">
               <h3 className="text-xl font-bold text-slate-900">Coordonnées Officielles</h3>
 
-              <div className="space-y-4 text-sm text-slate-700">
+              <div className="space-y-5 text-sm text-slate-700">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-[#EBF4FC] text-[#195D9B] flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Zone d'intervention</p>
-                    <p className="text-xs text-slate-600">Abidjan et villes environnantes (Côte d'Ivoire)</p>
+                    <p className="font-bold text-slate-900">Zone & Siège</p>
+                    <p className="text-xs text-slate-600">{settings.officialAddress}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#EBF4FC] text-[#195D9B] flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">Téléphone Commercial</p>
+                    <p className="text-xs text-slate-600 font-semibold">{settings.officialPhone}</p>
+                    {settings.phoneSecondary && <p className="text-xs text-slate-500">{settings.phoneSecondary}</p>}
                   </div>
                 </div>
 
@@ -57,8 +106,9 @@ const Contact = () => {
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Adresse Email</p>
-                    <p className="text-xs text-slate-600">baticlean225@gmail.com</p>
+                    <p className="font-bold text-slate-900">Email Officiel</p>
+                    <p className="text-xs text-slate-600 font-semibold">{settings.officialEmail}</p>
+                    {settings.emailDevis && <p className="text-xs text-[#195D9B] font-medium">Devis : {settings.emailDevis}</p>}
                   </div>
                 </div>
 
@@ -67,8 +117,9 @@ const Contact = () => {
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Horaires d'ouverture</p>
-                    <p className="text-xs text-slate-600">Du Lundi au Samedi : 08h00 - 18h00</p>
+                    <p className="font-bold text-slate-900">Horaires d'Ouverture</p>
+                    <p className="text-xs text-slate-600">{settings.openingHoursWeek}</p>
+                    {settings.openingHoursWeekend && <p className="text-xs text-slate-500 mt-0.5">{settings.openingHoursWeekend}</p>}
                   </div>
                 </div>
               </div>

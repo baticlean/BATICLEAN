@@ -1,10 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Clock, ArrowRight } from 'lucide-react';
 import SecretAdminTrigger from '../auth/SecretAdminTrigger';
+import { getCompanySettingsApi } from '../../services/adminService';
+import { socket } from '../../api/socket';
 
 const Footer = ({ onOpenAdminModal }) => {
   const currentYear = new Date().getFullYear();
+  const [settings, setSettings] = useState({
+    officialPhone: '+225 07 68 38 87 79',
+    officialEmail: 'contact@baticlean.ci',
+    officialAddress: "Abidjan, Côte d'Ivoire - Cocody Angré 8ème Tranche",
+    openingHoursWeek: 'Lundi - Samedi : 07h30 - 18h30',
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await getCompanySettingsApi();
+        const data = res?.data || res;
+        if (data && data.officialPhone) {
+          setSettings(data);
+        }
+      } catch (err) {
+        console.warn('Utilisation des coordonnées par défaut Footer :', err);
+      }
+    };
+
+    fetchSettings();
+
+    socket.on('company_settings_updated', (updated) => {
+      if (updated && updated.officialPhone) {
+        setSettings(updated);
+      }
+    });
+
+    return () => {
+      socket.off('company_settings_updated');
+    };
+  }, []);
 
   const handleLinkClick = () => {
     window.scrollTo({
@@ -77,19 +111,19 @@ const Footer = ({ onOpenAdminModal }) => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#EF9437] flex-shrink-0 mt-0.5" />
-                <span>Zone d'intervention professionnelle</span>
+                <span>{settings.officialAddress}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-[#EF9437] flex-shrink-0" />
-                <span>Contactez notre équipe commerciale</span>
+                <span>{settings.officialPhone}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-[#EF9437] flex-shrink-0" />
-                <span>baticlean225@gmail.com</span>
+                <span>{settings.officialEmail}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-[#EF9437] flex-shrink-0" />
-                <span>Du lundi au samedi : 08h00 - 18h00</span>
+                <span>{settings.openingHoursWeek}</span>
               </li>
             </ul>
           </div>

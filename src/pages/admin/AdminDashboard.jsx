@@ -3,6 +3,7 @@ import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
+import QuotePdfModal from '../../components/devis/QuotePdfModal';
 import { useAuth } from '../../context/AuthContext';
 import { socket } from '../../api/socket';
 import {
@@ -23,8 +24,10 @@ import {
   deleteAdminPartnerRequest,
   getHeroMediaSetting,
   updateHeroMediaSetting,
+  getCompanySettingsApi,
+  updateCompanySettingsApi,
 } from '../../services/adminService';
-import { FileText, Calendar, Clock, LogOut, RefreshCw, Plus, Trash2, Eye, EyeOff, HardHat, Handshake, CheckCircle2, XCircle, Image as ImageIcon, Video, Layers, Save, UploadCloud } from 'lucide-react';
+import { FileText, Calendar, Clock, LogOut, RefreshCw, Plus, Trash2, Eye, EyeOff, HardHat, Handshake, CheckCircle2, XCircle, Image as ImageIcon, Video, Layers, Save, UploadCloud, Phone, Mail, MapPin, Building, Globe, Send, FileCheck } from 'lucide-react';
 import Toast from '../../components/common/Toast';
 
 const AdminDashboard = () => {
@@ -46,6 +49,22 @@ const AdminDashboard = () => {
   });
   const [newCarouselUrl, setNewCarouselUrl] = useState('');
   const [savingHeroMedia, setSavingHeroMedia] = useState(false);
+
+  const [companySettings, setCompanySettings] = useState({
+    companyName: "Baticlean Côte d'Ivoire",
+    officialPhone: '+225 07 68 38 87 79',
+    phoneSecondary: '+225 01 02 03 04 05',
+    officialWhatsapp: '+2250768388779',
+    officialEmail: 'contact@baticlean.ci',
+    emailDevis: 'devis@baticlean.ci',
+    officialAddress: "Abidjan, Côte d'Ivoire - Cocody Angré 8ème Tranche",
+    openingHoursWeek: 'Lundi - Samedi : 07h30 - 18h30',
+    openingHoursWeekend: 'Dimanche : Sur rendez-vous uniquement',
+    googleMapsUrl: '',
+  });
+  const [savingCompanySettings, setSavingCompanySettings] = useState(false);
+
+  const [selectedQuoteForPdf, setSelectedQuoteForPdf] = useState(null);
 
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [isAddPartnerModalOpen, setIsAddPartnerModalOpen] = useState(false);
@@ -106,6 +125,12 @@ const AdminDashboard = () => {
       const heroRes = await getHeroMediaSetting();
       const heroData = heroRes?.data || heroRes;
       if (heroData && heroData.mediaType) setHeroMedia(heroData);
+
+      const settingsRes = await getCompanySettingsApi();
+      const settingsData = settingsRes?.data || settingsRes;
+      if (settingsData && settingsData.officialPhone) {
+        setCompanySettings(settingsData);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des données d\'administration :', error);
       setToast({ type: 'error', message: 'Erreur lors du chargement des données d\'administration.' });
@@ -185,6 +210,18 @@ const AdminDashboard = () => {
       setToast({ type: 'error', message: 'Erreur lors de la sauvegarde du Média Hero.' });
     } finally {
       setSavingHeroMedia(false);
+    }
+  };
+
+  const handleSaveCompanySettings = async () => {
+    setSavingCompanySettings(true);
+    try {
+      await updateCompanySettingsApi(companySettings);
+      setToast({ type: 'success', message: 'Coordonnées & Horaires de Baticlean mis à jour avec succès !' });
+    } catch (error) {
+      setToast({ type: 'error', message: 'Erreur lors de la mise à jour des coordonnées.' });
+    } finally {
+      setSavingCompanySettings(false);
     }
   };
 
@@ -407,6 +444,138 @@ const AdminDashboard = () => {
             <p className="text-xs text-emerald-600 font-semibold">Partenaires du réseau</p>
           </Card>
         </div>
+
+        {/* Section 0: Éditeur des Coordonnées & Horaires de la Société */}
+        <Card className="p-6 space-y-6 border border-slate-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Éditeur des Coordonnées & Horaires de Baticlean</h2>
+              <p className="text-xs text-slate-500">Modifiez les téléphones, emails, adresse et horaires d'ouverture affichés sur tout le site.</p>
+            </div>
+            <Button variant="secondary" size="sm" icon={Save} onClick={handleSaveCompanySettings} isLoading={savingCompanySettings}>
+              Enregistrer les Coordonnées
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-[#195D9B]" /> Téléphone Principal
+              </label>
+              <input
+                type="text"
+                value={companySettings.officialPhone}
+                onChange={(e) => setCompanySettings({ ...companySettings, officialPhone: e.target.value })}
+                placeholder="+225 07 68 38 87 79"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-500" /> Téléphone Secondaire / Support
+              </label>
+              <input
+                type="text"
+                value={companySettings.phoneSecondary}
+                onChange={(e) => setCompanySettings({ ...companySettings, phoneSecondary: e.target.value })}
+                placeholder="+225 01 02 03 04 05"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-emerald-600" /> Numéro WhatsApp Direct
+              </label>
+              <input
+                type="text"
+                value={companySettings.officialWhatsapp}
+                onChange={(e) => setCompanySettings({ ...companySettings, officialWhatsapp: e.target.value })}
+                placeholder="+2250768388779"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#195D9B]" /> Email Général de Contact
+              </label>
+              <input
+                type="email"
+                value={companySettings.officialEmail}
+                onChange={(e) => setCompanySettings({ ...companySettings, officialEmail: e.target.value })}
+                placeholder="contact@baticlean.ci"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#EF9437]" /> Email pour les Devis & Propositions
+              </label>
+              <input
+                type="email"
+                value={companySettings.emailDevis}
+                onChange={(e) => setCompanySettings({ ...companySettings, emailDevis: e.target.value })}
+                placeholder="devis@baticlean.ci"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#EF9437]" /> Adresse du Siège / Zone
+              </label>
+              <input
+                type="text"
+                value={companySettings.officialAddress}
+                onChange={(e) => setCompanySettings({ ...companySettings, officialAddress: e.target.value })}
+                placeholder="Abidjan, Côte d'Ivoire - Cocody Angré"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#195D9B]" /> Horaires Semaine (Lun - Sam)
+              </label>
+              <input
+                type="text"
+                value={companySettings.openingHoursWeek}
+                onChange={(e) => setCompanySettings({ ...companySettings, openingHoursWeek: e.target.value })}
+                placeholder="Lundi - Samedi : 07h30 - 18h30"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#EF9437]" /> Horaires Dimanche / Jours fériés
+              </label>
+              <input
+                type="text"
+                value={companySettings.openingHoursWeekend}
+                onChange={(e) => setCompanySettings({ ...companySettings, openingHoursWeekend: e.target.value })}
+                placeholder="Dimanche : Sur rendez-vous uniquement"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-blue-600" /> Lien Google Maps (Optionnel)
+              </label>
+              <input
+                type="text"
+                value={companySettings.googleMapsUrl}
+                onChange={(e) => setCompanySettings({ ...companySettings, googleMapsUrl: e.target.value })}
+                placeholder="https://maps.google.com/..."
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+          </div>
+        </Card>
 
         {/* Section Média Hero (Zone Droite de la Page d'Accueil) */}
         <Card className="p-6 space-y-6 border border-slate-200">
@@ -658,7 +827,7 @@ const AdminDashboard = () => {
                   <th className="p-3">Demandeur</th>
                   <th className="p-3">Localisation</th>
                   <th className="p-3">Bâtiment</th>
-                  <th className="p-3">Statut</th>
+                  <th className="p-3">Devis PDF</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -681,15 +850,32 @@ const AdminDashboard = () => {
                       <td className="p-3 text-slate-700">{q.commune || q.district || q.city}</td>
                       <td className="p-3 font-medium text-slate-800">{q.buildingType} ({q.estimatedSurface || 0} m²)</td>
                       <td className="p-3">
-                        <Badge variant={q.status === 'NEW' ? 'secondary' : 'primary'}>{q.status}</Badge>
+                        {q.pdfStatus === 'SENT' ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3" /> Devis Envoyé
+                          </span>
+                        ) : q.pdfStatus === 'CUSTOM_UPLOADED' ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#195D9B] bg-[#EBF4FC] px-2 py-0.5 rounded-md border border-[#ADD1F3]">
+                            <FileCheck className="w-3 h-3" /> Canva/Word
+                          </span>
+                        ) : q.pdfStatus === 'GENERATED' ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#EF9437] bg-[#FEF7EE] px-2 py-0.5 rounded-md border border-[#FDE6D2]">
+                            <FileText className="w-3 h-3" /> PDF Prêt
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                            Non Généré
+                          </span>
+                        )}
                       </td>
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => handleStatusChange(q._id, 'UNDER_REVIEW')}
-                            className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 transition-colors"
+                            onClick={() => setSelectedQuoteForPdf(q)}
+                            className="px-2.5 py-1 rounded-lg bg-[#195D9B] text-white font-bold hover:bg-[#13497B] transition-colors flex items-center gap-1 shadow-sm"
+                            title="Générer, prévisualiser ou envoyer le devis PDF"
                           >
-                            Étudier
+                            <FileText className="w-3.5 h-3.5" /> Devis PDF
                           </button>
                           <button
                             onClick={() => handleStatusChange(q._id, 'ACCEPTED')}
@@ -878,6 +1064,16 @@ const AdminDashboard = () => {
           </div>
         </Card>
       </div>
+
+      {/* Modal Devis PDF */}
+      {selectedQuoteForPdf && (
+        <QuotePdfModal
+          isOpen={!!selectedQuoteForPdf}
+          onClose={() => setSelectedQuoteForPdf(null)}
+          quoteRequest={selectedQuoteForPdf}
+          onSuccess={fetchData}
+        />
+      )}
 
       {/* Modal Décision Partenariat */}
       {selectedRequestForDecision && (
