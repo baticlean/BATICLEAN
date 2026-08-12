@@ -63,6 +63,10 @@ export const createAdminPartner = async (partnerData) => {
   return await apiClient.post('/admin/partners', partnerData);
 };
 
+export const updateAdminPartner = async (id, partnerData) => {
+  return await apiClient.put(`/admin/partners/${id}`, partnerData);
+};
+
 export const toggleAdminPartnerPublication = async (id) => {
   return await apiClient.patch(`/admin/partners/${id}/toggle-publish`);
 };

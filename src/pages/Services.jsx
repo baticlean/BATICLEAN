@@ -4,6 +4,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import AnimatedSectionTitle from '../components/common/AnimatedSectionTitle';
+import FaqSection from '../components/common/FaqSection';
 import { CheckCircle, FileText, ShieldCheck } from 'lucide-react';
 
 const allServices = [
@@ -90,6 +91,8 @@ const Services = () => {
             </Card>
           ))}
         </div>
+
+        <FaqSection className="rounded-3xl border border-slate-200" />
       </div>
     </div>
   );

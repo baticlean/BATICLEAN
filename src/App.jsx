@@ -14,6 +14,7 @@ import Projects from './pages/Projects';
 import Partners from './pages/Partners';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import AvisPage from './pages/AvisPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
 const queryClient = new QueryClient({
@@ -42,6 +43,7 @@ function App() {
               <Route path="/partenaires" element={<Partners />} />
               <Route path="/a-propos" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/avis" element={<AvisPage />} />
               
               {/* Routes Back-Office Administrateur */}
               <Route

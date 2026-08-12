@@ -6,6 +6,8 @@ import HowItWorksSection from '../components/home/HowItWorksSection';
 import WhyBaticleanSection from '../components/home/WhyBaticleanSection';
 import FeaturedProjectsSection from '../components/home/FeaturedProjectsSection';
 import PartnersSection from '../components/home/PartnersSection';
+import TestimonialsSection from '../components/common/TestimonialsSection';
+import FaqSection from '../components/common/FaqSection';
 import FinalCtaSection from '../components/home/FinalCtaSection';
 
 const Home = () => {
@@ -18,6 +20,8 @@ const Home = () => {
       <WhyBaticleanSection />
       <FeaturedProjectsSection />
       <PartnersSection />
+      <TestimonialsSection />
+      <FaqSection />
       <FinalCtaSection />
     </div>
   );
