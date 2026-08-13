@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare, PlusCircle, Quote, Building2 } from 'lucide-react';
 import Button from './Button';
 import SubmitTestimonialModal from './SubmitTestimonialModal';
+import HorizontalCarousel from './HorizontalCarousel';
 import { getPublicTestimonialsApi } from '../../services/testimonialService';
 import { socket } from '../../api/socket';
 
@@ -120,7 +121,7 @@ const TestimonialsSection = ({ className = '', hideHeader = false }) => {
           </div>
         )}
 
-        {/* Grille des Avis Réels (Pas de Faux Avis) */}
+        {/* Carrousel Horizontal des Avis Réels */}
         {loading ? (
           <div className="text-center py-12 text-slate-500 text-xs font-semibold">
             Chargement des retours d'expérience...
@@ -147,11 +148,11 @@ const TestimonialsSection = ({ className = '', hideHeader = false }) => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <HorizontalCarousel cardWidth="w-[300px] sm:w-[350px]">
             {testimonials.map((t) => (
               <div
                 key={t._id}
-                className="bg-slate-50 p-6 rounded-3xl border border-slate-200/80 hover:border-[#195D9B]/30 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
+                className="bg-slate-50 p-6 rounded-3xl border border-slate-200/80 hover:border-[#195D9B]/30 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4 h-full"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -163,17 +164,17 @@ const TestimonialsSection = ({ className = '', hideHeader = false }) => {
                     <Quote className="w-6 h-6 text-[#195D9B]/20" />
                   </div>
 
-                  {t.title && <h4 className="font-bold text-slate-900 text-sm">{t.title}</h4>}
+                  {t.title && <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{t.title}</h4>}
 
-                  <p className="text-xs text-slate-700 leading-relaxed italic">
+                  <p className="text-xs text-slate-700 leading-relaxed italic line-clamp-4">
                     "{t.comment}"
                   </p>
                 </div>
 
                 <div className="pt-4 border-t border-slate-200/60 flex items-center justify-between text-xs">
                   <div>
-                    <p className="font-extrabold text-slate-900">{t.authorName}</p>
-                    <p className="text-[11px] text-[#195D9B] font-semibold">{t.company || t.role || 'Client Baticlean'}</p>
+                    <p className="font-extrabold text-slate-900 truncate max-w-[150px]">{t.authorName}</p>
+                    <p className="text-[11px] text-[#195D9B] font-semibold truncate max-w-[150px]">{t.company || t.role || 'Client Baticlean'}</p>
                   </div>
                   {t.buildingType && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 bg-white px-2 py-1 rounded-lg border border-slate-200">
@@ -183,7 +184,7 @@ const TestimonialsSection = ({ className = '', hideHeader = false }) => {
                 </div>
               </div>
             ))}
-          </div>
+          </HorizontalCarousel>
         )}
 
       </div>

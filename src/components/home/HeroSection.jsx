@@ -40,7 +40,7 @@ const HeroSection = () => {
     }
   }, [heroMedia]);
 
-  const renderMediaContent = (heightClass = "h-48 sm:h-64 lg:h-80") => {
+  const renderMediaContent = (heightClass = "h-52 sm:h-64 lg:h-80") => {
     return (
       <div className="relative mx-auto max-w-sm sm:max-w-md lg:max-w-none bg-white p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden">
         {heroMedia.mediaType === 'VIDEO' && heroMedia.videoUrl ? (
@@ -118,38 +118,24 @@ const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF4FC]/50 via-white to-[#FEFEFE] py-8 sm:py-12 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
           {/* Colonne Texte & Contenu */}
           <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-left">
 
-            {/* --- VERSION MOBILE (< lg) : Titre 100% fluide sans sauts forcé --- */}
-            <div className="block lg:hidden">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug animate-hero-title">
-                Spécialiste du Nettoyage après{' '}
-                <span className="text-[#195D9B]">Construction</span>{' '}
-                &amp;{' '}
-                <span className="text-[#EF9437]">Remise en État.</span>
-              </h1>
-            </div>
+            {/* Titre Principal harmonieux, fluide et parfaitement structuré mobile & PC */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight sm:leading-tight">
+              Spécialiste du Nettoyage après{' '}
+              <span className="text-[#195D9B]">Construction</span> &amp;{' '}
+              <span className="text-[#EF9437]">Remise en État.</span>
+            </h1>
 
-            {/* --- VERSION PC / DESKTOP (>= lg) : Titre 2 lignes majestueuses et bien aérées --- */}
-            <div className="hidden lg:block">
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight animate-hero-title">
-                <span>Spécialiste du Nettoyage après</span>
-                <span className="block mt-5">
-                  <span className="text-[#195D9B]">Construction</span> &amp;{' '}
-                  <span className="text-[#EF9437]">Remise en État.</span>
-                </span>
-              </h1>
-            </div>
-
-            {/* Sur Mobile uniquement (< lg) : Média affiché IMMÉDIATEMENT sous le titre pour être visible dès l'ouverture */}
+            {/* Sur Mobile uniquement (< lg) : Média affiché sous le titre principal */}
             <div className="block lg:hidden my-4">
-              {renderMediaContent("h-48 sm:h-64")}
+              {renderMediaContent("h-52 sm:h-64")}
             </div>
 
-            <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-slate-800 leading-snug">
+            <p className="text-lg sm:text-2xl font-bold text-slate-800 leading-snug">
               Livrez vos chantiers propres, impeccables et prêts à l'emploi.
             </p>
 
@@ -164,18 +150,18 @@ const HeroSection = () => {
               </div>
               <div className="flex items-center gap-2.5 text-xs sm:text-sm font-bold text-slate-800">
                 <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EF9437] flex-shrink-0" />
-                <span>Étude gratuite & devis sous 24h</span>
+                <span>Étude gratuite &amp; devis sous 24h</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-3">
               <Link to="/devis">
-                <Button variant="secondary" size="lg" icon={FileText} className="w-full sm:w-auto text-sm">
+                <Button variant="secondary" size="lg" icon={FileText} className="w-full sm:w-auto text-sm font-extrabold">
                   Demander un devis gratuit
                 </Button>
               </Link>
               <Link to="/rendez-vous">
-                <Button variant="outline" size="lg" icon={Calendar} className="w-full sm:w-auto text-sm">
+                <Button variant="outline" size="lg" icon={Calendar} className="w-full sm:w-auto text-sm font-bold">
                   Planifier une visite de chantier
                 </Button>
               </Link>
@@ -184,7 +170,7 @@ const HeroSection = () => {
 
           {/* Sur Desktop uniquement (>= lg) : Colonne Média classique à droite */}
           <div className="hidden lg:block lg:col-span-5 relative">
-            {renderMediaContent("h-80")}
+            {renderMediaContent("h-80 lg:h-[380px]")}
           </div>
 
         </div>

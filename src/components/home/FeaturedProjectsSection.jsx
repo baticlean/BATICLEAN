@@ -4,7 +4,8 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
 import AnimatedSectionTitle from '../common/AnimatedSectionTitle';
-import { ArrowRight, MapPin, CheckCircle, Building2, HardHat } from 'lucide-react';
+import HorizontalCarousel from '../common/HorizontalCarousel';
+import { ArrowRight, MapPin, CheckCircle, HardHat } from 'lucide-react';
 import apiClient from '../../api/apiClient';
 
 const FeaturedProjectsSection = () => {
@@ -30,8 +31,8 @@ const FeaturedProjectsSection = () => {
 
   return (
     <section className="py-20 bg-[#FEFEFE] border-b border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <AnimatedSectionTitle className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Découvrez la qualité de <span className="text-[#195D9B]">nos livraisons de chantier</span>.
@@ -49,7 +50,7 @@ const FeaturedProjectsSection = () => {
             Chargement des réalisations...
           </div>
         ) : projects.length === 0 ? (
-          <Card className="p-10 text-center space-y-4 border-2 border-slate-100 bg-slate-50/60 max-w-3xl mx-auto">
+          <Card className="p-10 text-center space-y-4 border-2 border-slate-100 bg-slate-50/60 max-w-3xl mx-auto rounded-3xl">
             <div className="w-14 h-14 rounded-2xl bg-[#EBF4FC] text-[#195D9B] border border-[#ADD1F3] flex items-center justify-center mx-auto">
               <HardHat className="w-7 h-7 text-[#EF9437]" />
             </div>
@@ -59,9 +60,9 @@ const FeaturedProjectsSection = () => {
             </p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <HorizontalCarousel cardWidth="w-[300px] sm:w-[380px]">
             {projects.map((project) => (
-              <Card key={project._id || project.reference} className="p-8 border-2 border-slate-100 flex flex-col justify-between">
+              <Card key={project._id || project.reference} className="p-8 border-2 border-slate-100 flex flex-col justify-between rounded-3xl h-full hover:border-[#195D9B]/40 hover:shadow-xl transition-all">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Badge variant="primary">{project.buildingType}</Badge>
@@ -79,13 +80,13 @@ const FeaturedProjectsSection = () => {
                     <span>{project.city} {project.commune ? `, ${project.commune}` : ''}</span>
                   </div>
 
-                  <p className="text-sm text-slate-600 leading-relaxed">{project.description}</p>
+                  <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">{project.description}</p>
                 </div>
 
                 <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700">
                     <CheckCircle className="w-4 h-4" />
-                    <span>Chantier livré avec succès</span>
+                    <span>Chantier livré</span>
                   </div>
                   <Link to="/realisations" className="text-sm font-bold text-[#195D9B] hover:text-[#154E83] flex items-center gap-1">
                     Voir détails <ArrowRight className="w-4 h-4" />
@@ -93,7 +94,7 @@ const FeaturedProjectsSection = () => {
                 </div>
               </Card>
             ))}
-          </div>
+          </HorizontalCarousel>
         )}
       </div>
     </section>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
+import HorizontalCarousel from '../components/common/HorizontalCarousel';
 import PartnerRequestModal from '../components/partners/PartnerRequestModal';
 import { Building2, ShieldCheck, Globe, Phone, Mail, ExternalLink, Handshake, PlusCircle } from 'lucide-react';
 import apiClient from '../api/apiClient';
@@ -72,7 +73,7 @@ const Partners = () => {
           </p>
         </div>
 
-        {/* Grille Principale des Partenaires Réels */}
+        {/* Carrousel Horizontal des Partenaires Réels */}
         {loading ? (
           <div className="text-center py-12 text-slate-500 text-sm font-semibold">
             Chargement des partenaires du réseau Baticlean...
@@ -95,11 +96,11 @@ const Partners = () => {
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <HorizontalCarousel cardWidth="w-[300px] sm:w-[360px]">
             {dbPartners.map((partner) => (
               <Card
                 key={partner._id}
-                className="p-7 border-2 border-slate-100 hover:border-[#195D9B]/40 hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 rounded-3xl group"
+                className="p-7 border-2 border-slate-100 hover:border-[#195D9B]/40 hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 rounded-3xl group h-full"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
@@ -122,7 +123,7 @@ const Partners = () => {
                       {partner.name}
                     </h3>
                     {partner.description && (
-                      <p className="text-xs text-slate-600 mt-2 leading-relaxed font-medium">
+                      <p className="text-xs text-slate-600 mt-2 leading-relaxed font-medium line-clamp-3">
                         {partner.description}
                       </p>
                     )}
@@ -139,7 +140,7 @@ const Partners = () => {
                   {partner.contactEmail && (
                     <div className="flex items-center gap-2 font-semibold">
                       <Mail className="w-4 h-4 text-[#EF9437] flex-shrink-0" />
-                      <span>{partner.contactEmail}</span>
+                      <span className="truncate">{partner.contactEmail}</span>
                     </div>
                   )}
                   {partner.websiteUrl && (
@@ -150,14 +151,14 @@ const Partners = () => {
                       className="inline-flex items-center gap-1.5 font-bold text-[#195D9B] hover:text-[#EF9437] hover:underline pt-1"
                     >
                       <Globe className="w-4 h-4" />
-                      <span>Visiter le site web officiel</span>
+                      <span>Visiter le site officiel</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
               </Card>
             ))}
-          </div>
+          </HorizontalCarousel>
         )}
 
         {/* Section Bas de Page : Appel aux nouveaux partenaires */}
