@@ -90,7 +90,7 @@ export const deleteAdminPartnerRequest = async (id) => {
 
 // Hero Media admin calls
 export const getHeroMediaSetting = async () => {
-  return await apiClient.get('/hero-media');
+  return await apiClient.get('/public/hero-media');
 };
 
 export const updateHeroMediaSetting = async (heroMediaData) => {
@@ -99,7 +99,7 @@ export const updateHeroMediaSetting = async (heroMediaData) => {
 
 // Company Settings admin calls (Contact & Opening Hours)
 export const getCompanySettingsApi = async () => {
-  return await apiClient.get('/company-settings');
+  return await apiClient.get('/public/company-settings');
 };
 
 export const updateCompanySettingsApi = async (settingsData) => {

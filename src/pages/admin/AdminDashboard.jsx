@@ -42,7 +42,14 @@ import {
   updateTestimonialStatusApi,
   deleteTestimonialApi,
 } from '../../services/testimonialService';
-import { FileText, Calendar, Clock, LogOut, RefreshCw, Plus, Trash2, Eye, EyeOff, HardHat, Handshake, CheckCircle2, XCircle, Image as ImageIcon, Video, Layers, Save, UploadCloud, Phone, Mail, MapPin, Building, Globe, Send, FileCheck, HelpCircle, Edit, Star, MessageSquare } from 'lucide-react';
+import {
+  getAdminServicesApi,
+  createServiceApi,
+  updateServiceApi,
+  toggleServicePublicationApi,
+  deleteServiceApi,
+} from '../../services/serviceService';
+import { FileText, Calendar, Clock, LogOut, RefreshCw, Plus, Trash2, Eye, EyeOff, HardHat, Handshake, CheckCircle2, XCircle, Image as ImageIcon, Video, Layers, Save, UploadCloud, Phone, Mail, MapPin, Building, Globe, Send, FileCheck, HelpCircle, Edit, Star, MessageSquare, Wrench, ShieldCheck } from 'lucide-react';
 import Toast from '../../components/common/Toast';
 
 const AdminDashboard = () => {
@@ -54,6 +61,7 @@ const AdminDashboard = () => {
   const [partnerRequests, setPartnerRequests] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
@@ -114,6 +122,20 @@ const AdminDashboard = () => {
   const [selectedPartnerForEdit, setSelectedPartnerForEdit] = useState(null);
   const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
   const [isTestimonialModalOpen, setIsTestimonialModalOpen] = useState(false);
+
+  // Modale & formulaire Prestations / Services
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [selectedServiceForEdit, setSelectedServiceForEdit] = useState(null);
+  const [serviceForm, setServiceForm] = useState({
+    name: '',
+    category: 'Gros Œuvre & Second Œuvre',
+    shortDescription: '',
+    description: '',
+    features: '',
+    highlight: '',
+    displayOrder: 0,
+    isPublished: true,
+  });
 
   const [selectedFaqForEdit, setSelectedFaqForEdit] = useState(null);
   const [faqForm, setFaqForm] = useState({
@@ -177,6 +199,10 @@ const AdminDashboard = () => {
         : (quotesData.requests || quotesData.quoteRequests || statsData.recentRequests || []);
       setQuotes(loadedQuotes);
 
+      const servicesRes = await getAdminServicesApi();
+      const servicesData = servicesRes?.data || servicesRes || [];
+      setServices(Array.isArray(servicesData) ? servicesData : []);
+
       const projectsRes = await getAdminProjects();
       const projectsData = projectsRes?.data || projectsRes || [];
       setProjects(Array.isArray(projectsData) ? projectsData : []);
@@ -237,6 +263,10 @@ const AdminDashboard = () => {
       fetchData();
     });
 
+    socket.on('service_created', () => fetchData());
+    socket.on('service_updated', () => fetchData());
+    socket.on('service_deleted', () => fetchData());
+
     socket.on('data_updated', () => {
       fetchData();
     });
@@ -246,6 +276,9 @@ const AdminDashboard = () => {
       socket.off('appointment_created');
       socket.off('partner_request_created');
       socket.off('testimonial_created');
+      socket.off('service_created');
+      socket.off('service_updated');
+      socket.off('service_deleted');
       socket.off('data_updated');
     };
   }, []);
@@ -271,6 +304,80 @@ const AdminDashboard = () => {
           fetchData();
         } catch (error) {
           setToast({ type: 'error', message: 'Erreur de suppression de la demande de devis.' });
+        }
+      },
+    });
+  };
+
+  // Handlers pour les Prestations / Services
+  const handleOpenCreateServiceModal = () => {
+    setSelectedServiceForEdit(null);
+    setServiceForm({
+      name: '',
+      category: 'Gros Œuvre & Second Œuvre',
+      shortDescription: '',
+      description: '',
+      features: '',
+      highlight: '',
+      displayOrder: services.length + 1,
+      isPublished: true,
+    });
+    setIsServiceModalOpen(true);
+  };
+
+  const handleOpenEditServiceModal = (srv) => {
+    setSelectedServiceForEdit(srv);
+    setServiceForm({
+      name: srv.name || '',
+      category: srv.category || 'Gros Œuvre & Second Œuvre',
+      shortDescription: srv.shortDescription || '',
+      description: srv.description || '',
+      features: Array.isArray(srv.features) ? srv.features.join('\n') : (srv.features || ''),
+      highlight: srv.highlight || '',
+      displayOrder: srv.displayOrder || 0,
+      isPublished: srv.isPublished !== false,
+    });
+    setIsServiceModalOpen(true);
+  };
+
+  const handleSaveServiceSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (selectedServiceForEdit) {
+        await updateServiceApi(selectedServiceForEdit._id, serviceForm);
+        setToast({ type: 'success', message: 'Prestation mise à jour avec succès !' });
+      } else {
+        await createServiceApi(serviceForm);
+        setToast({ type: 'success', message: 'Nouvelle prestation ajoutée au catalogue !' });
+      }
+      setIsServiceModalOpen(false);
+      fetchData();
+    } catch (error) {
+      setToast({ type: 'error', message: 'Erreur lors de l\'enregistrement de la prestation.' });
+    }
+  };
+
+  const handleToggleServicePublication = async (id) => {
+    try {
+      await toggleServicePublicationApi(id);
+      setToast({ type: 'success', message: 'Statut de publication de la prestation modifié en 1 clic !' });
+      fetchData();
+    } catch (error) {
+      setToast({ type: 'error', message: 'Échec de la modification.' });
+    }
+  };
+
+  const handleDeleteService = (id) => {
+    triggerConfirmModal({
+      title: 'Supprimer cette prestation ?',
+      message: 'Voulez-vous vraiment supprimer cette prestation du catalogue Baticlean ?',
+      onConfirm: async () => {
+        try {
+          await deleteServiceApi(id);
+          setToast({ type: 'success', message: 'Prestation supprimée.' });
+          fetchData();
+        } catch (error) {
+          setToast({ type: 'error', message: 'Erreur lors de la suppression de la prestation.' });
         }
       },
     });
@@ -667,20 +774,20 @@ const AdminDashboard = () => {
 
           <Card className="p-6 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avis Clients à Modérer</span>
-              <Star className="w-5 h-5 text-[#EF9437] fill-[#EF9437]" />
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Prestations BTP</span>
+              <Wrench className="w-5 h-5 text-[#195D9B]" />
             </div>
-            <p className="text-3xl font-extrabold text-slate-900">{pendingTestimonialsCount}</p>
-            <p className="text-xs text-[#EF9437] font-semibold">{testimonials.length} avis au total</p>
+            <p className="text-3xl font-extrabold text-slate-900">{services.length}</p>
+            <p className="text-xs text-[#195D9B] font-semibold">{services.filter(s => s.isPublished).length} en ligne</p>
           </Card>
 
           <Card className="p-6 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Demandes Partenariat</span>
-              <Handshake className="w-5 h-5 text-[#EF9437]" />
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avis Clients</span>
+              <Star className="w-5 h-5 text-[#EF9437] fill-[#EF9437]" />
             </div>
-            <p className="text-3xl font-extrabold text-slate-900">{partnerRequests.length}</p>
-            <p className="text-xs text-[#EF9437] font-semibold">Demandes reçues</p>
+            <p className="text-3xl font-extrabold text-slate-900">{testimonials.length}</p>
+            <p className="text-xs text-[#EF9437] font-semibold">{pendingTestimonialsCount} à valider</p>
           </Card>
 
           <Card className="p-6 space-y-3">
@@ -694,6 +801,115 @@ const AdminDashboard = () => {
             <p className="text-xs text-emerald-600 font-semibold">Partenaires du réseau</p>
           </Card>
         </div>
+
+        {/* SECTION SERVICES & PRESTATONS BTP (Nouveau Module de Gestion) */}
+        <Card className="p-6 space-y-6 border border-slate-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-slate-900">Gestion du Catalogue des Prestations & Services</h2>
+                <Badge variant="primary">{services.length} prestations</Badge>
+              </div>
+              <p className="text-xs text-slate-500">
+                Activez ou désactivez une prestation en 1 clic, ajustez son descriptif ou ajoutez de nouveaux services.
+              </p>
+            </div>
+            <Button variant="secondary" size="sm" icon={Plus} onClick={handleOpenCreateServiceModal}>
+              Ajouter un Service
+            </Button>
+          </div>
+
+          <div className="overflow-x-auto max-h-80 overflow-y-auto border border-slate-100 rounded-2xl">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="p-3">Prestation / Service</th>
+                  <th className="p-3">Catégorie</th>
+                  <th className="p-3">Points Forts</th>
+                  <th className="p-3">Statut (1-Clic)</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {services.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-6 text-center text-slate-500">
+                      Chargement des prestations...
+                    </td>
+                  </tr>
+                ) : (
+                  services.map((srv) => (
+                    <tr key={srv._id} className="hover:bg-slate-50/60">
+                      <td className="p-3 max-w-sm">
+                        <p className="font-extrabold text-slate-900">{srv.name}</p>
+                        <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">{srv.shortDescription || srv.description}</p>
+                        {srv.highlight && (
+                          <span className="inline-block mt-1 text-[10px] font-extrabold text-[#EF9437] bg-[#FEF7EE] px-2 py-0.5 rounded border border-[#FDE6D2]">
+                            {srv.highlight}
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3 font-semibold text-slate-700">{srv.category}</td>
+                      <td className="p-3 max-w-xs">
+                        {Array.isArray(srv.features) && srv.features.length > 0 ? (
+                          <ul className="list-disc list-inside text-[11px] text-slate-600 space-y-0.5">
+                            {srv.features.slice(0, 2).map((f, i) => (
+                              <li key={i} className="truncate">{f}</li>
+                            ))}
+                            {srv.features.length > 2 && <li className="text-slate-400">+{srv.features.length - 2} autres...</li>}
+                          </ul>
+                        ) : (
+                          <span className="text-slate-400 italic">Non spécifié</span>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <button
+                          onClick={() => handleToggleServicePublication(srv._id)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-extrabold transition-all border ${
+                            srv.isPublished
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                          }`}
+                          title="Cliquer pour activer ou désactiver en 1 clic"
+                        >
+                          {srv.isPublished ? (
+                            <>
+                              <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>En Ligne</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-3.5 h-3.5 text-slate-500" />
+                              <span>Désactivé</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEditServiceModal(srv)}
+                            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                            title="Modifier la prestation"
+                          >
+                            <Edit className="w-4 h-4 text-[#195D9B]" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteService(srv._id)}
+                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Supprimer la prestation"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
         {/* Section 3: Gestion des Partenaires */}
         <Card className="p-6 space-y-6 border border-slate-200">
@@ -1516,6 +1732,102 @@ const AdminDashboard = () => {
           </div>
         </Card>
       </div>
+
+      {/* Modal Création / Édition de Service / Prestation */}
+      <Modal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        title={selectedServiceForEdit ? 'Modifier la Prestation' : 'Ajouter une Nouvelle Prestation au Catalogue'}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleSaveServiceSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Nom de la Prestation *</label>
+            <input
+              type="text"
+              required
+              value={serviceForm.name}
+              onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
+              placeholder="Ex: Nettoyage de fin de chantier"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Catégorie BTP</label>
+              <input
+                type="text"
+                value={serviceForm.category}
+                onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
+                placeholder="Ex: Gros Œuvre & Second Œuvre"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Point Fort / Badge (Highlight)</label>
+              <input
+                type="text"
+                value={serviceForm.highlight}
+                onChange={(e) => setServiceForm({ ...serviceForm, highlight: e.target.value })}
+                placeholder="Ex: Idéal avant remise des clés"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Description courte (Accroche)</label>
+            <input
+              type="text"
+              value={serviceForm.shortDescription}
+              onChange={(e) => setServiceForm({ ...serviceForm, shortDescription: e.target.value })}
+              placeholder="Résumé en une phrase pour la carte d'accueil..."
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Description détaillée *</label>
+            <textarea
+              rows={3}
+              required
+              value={serviceForm.description}
+              onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+              placeholder="Détaillez le protocole d'intervention..."
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Caractéristiques clés (1 par ligne)</label>
+            <textarea
+              rows={3}
+              value={serviceForm.features}
+              onChange={(e) => setServiceForm({ ...serviceForm, features: e.target.value })}
+              placeholder="Brossage et décapage mécanique des sols&#10;Nettoyage des vitres et encadrements&#10;Désinfection des sanitaires"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#195D9B]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="isServicePublished"
+              checked={serviceForm.isPublished}
+              onChange={(e) => setServiceForm({ ...serviceForm, isPublished: e.target.checked })}
+              className="w-4 h-4 text-[#195D9B] rounded border-slate-300"
+            />
+            <label htmlFor="isServicePublished" className="text-xs font-semibold text-slate-700 cursor-pointer">
+              Publier immédiatement cette prestation sur le site public
+            </label>
+          </div>
+
+          <Button type="submit" variant="secondary" className="w-full justify-center">
+            {selectedServiceForEdit ? 'Enregistrer les Modifications' : 'Ajouter la Prestation au Catalogue'}
+          </Button>
+        </form>
+      </Modal>
 
       {/* Modal Ajout / Édition de Partenaire */}
       <Modal
