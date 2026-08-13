@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'https://baticlean-backend-om5g.onrender.com/api/v1';
+const getBaseURL = () => {
+  let envUrl = import.meta.env.VITE_API_URL || 'https://baticlean-backend-om5g.onrender.com/api/v1';
+  envUrl = envUrl.trim().replace(/\/+$/, '');
+  if (!envUrl.includes('/api/v1') && !envUrl.includes('/api')) {
+    envUrl = `${envUrl}/api/v1`;
+  }
+  return envUrl;
+};
+
+const baseURL = getBaseURL();
 
 const apiClient = axios.create({
   baseURL,
